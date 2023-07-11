@@ -1,0 +1,8 @@
+urwid
+#pypivy
+python-statemachine
+GitPython
+certvalidator
+asn1crypto
+python-json-logger
+paramiko
