@@ -47,7 +47,7 @@ class Token:
         """
         ptr = libpivy.piv_token_chuid(self._ptr)
         if ptr:
-            return Chuid(set = self._set, ptr = ptr)
+            return Chuid(owner = self, ptr = ptr)
         else:
             return None
     @property
@@ -57,7 +57,7 @@ class Token:
         """
         ptr = libpivy.piv_token_fascn(self._ptr)
         if ptr:
-            return Fascn(set = self._set, ptr = ptr)
+            return Fascn(owner = self, ptr = ptr)
         else:
             return None
     @property
@@ -270,14 +270,23 @@ class Transaction:
         err = libpivy.piv_write_cardcap(self._ptr, obj._ptr)
         if err:
             raise Errf(err)
+    def write_chuid(self, obj: Chuid):
+        if not isinstance(obj, pypivy.Chuid):
+            raise TypeError('obj must be a Chuid instance')
+        err = libpivy.piv_write_chuid(self._ptr, obj._ptr)
+        if err:
+            raise Errf(err)
     def write_pinfo(self, obj: PrintedInfo):
         if not isinstance(obj, pypivy.PrintedInfo):
             raise TypeError('obj must be a PrintedInfo instance')
         err = libpivy.piv_write_pinfo(self._ptr, obj._ptr)
         if err:
             raise Errf(err)
-    def auth_admin(self, algorithm: Algorithm, key_hex: str):
-        key = bytes.from_hex(str)
+    def auth_admin(self, algorithm: Algorithm, key_or_hex: str | bytes):
+        if isinstance(key_or_hex, str):
+            key = bytes.from_hex(key_or_hex)
+        else:
+            key = key_or_hex
         err = libpivy.piv_auth_admin(self._ptr, key, len(key), algorithm.value)
         if err:
             raise Errf(err)

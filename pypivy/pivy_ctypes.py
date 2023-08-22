@@ -225,6 +225,8 @@ libpivy.piv_read_cardcap.argtypes = [c_void_p, POINTER(c_void_p)]
 libpivy.piv_read_cardcap.restype = c_void_p
 libpivy.piv_write_cardcap.argtypes = [c_void_p, c_void_p]
 libpivy.piv_write_cardcap.restype = c_void_p
+libpivy.piv_write_chuid.argtypes = [c_void_p, c_void_p]
+libpivy.piv_write_chuid.restype = c_void_p
 
 for x in [libpivy.piv_pinfo_set_name, libpivy.piv_pinfo_set_affiliation, libpivy.piv_pinfo_set_expiry, libpivy.piv_pinfo_set_serial, libpivy.piv_pinfo_set_issuer, libpivy.piv_pinfo_set_org_line_1, libpivy.piv_pinfo_set_org_line_2]:
     x.argtypes = [c_void_p, c_char_p]

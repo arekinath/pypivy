@@ -138,13 +138,13 @@ class PrintedInfo:
         libpivy.ykpiv_pinfo_set_admin_key(self._ptr, v, len(v))
 
 class Chuid:
-    def __init__(self, ptr: Optional[c_void_p] = None, set: Optional[TokenSet] = None):
+    def __init__(self, ptr: Optional[c_void_p] = None, owner: Optional[object] = None):
         if ptr is None:
             ptr = libpivy.piv_chuid_new()
-        self._set = set
+        self._owner = owner
         self._ptr = ptr
     def __del__(self):
-        if not self._set:
+        if not self._owner:
             libpivy.piv_chuid_free(self._ptr)
     def __repr__(self):
         return '<Chuid(guid = ' + self.guid + ', expiry = ' + repr(self.expiry) + \
@@ -159,12 +159,12 @@ class Chuid:
     def fascn(self) -> Optional[Fascn]:
         ptr = libpivy.piv_chuid_get_fascn(self._ptr)
         if ptr:
-            return Fascn(set = self._set, ptr = ptr)
+            return Fascn(owner = self, ptr = ptr)
         else:
             return None
     @fascn.setter
     def fascn(self, fascn: Fascn):
-        if self._set:
+        if self._owner:
             raise PermissionError('CHUID is read-only')
         libpivy.piv_chuid_set_fascn(self._ptr, fascn._ptr)
     @property
@@ -172,7 +172,7 @@ class Chuid:
         return libpivy.piv_chuid_get_guidhex(self._ptr).decode('ascii')
     @guid.setter
     def guid(self, guid_hex: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('CHUID is read-only')
         guid = bytes.fromhex(str)
         if len(guid) != 16:
@@ -184,22 +184,22 @@ class Chuid:
         ptr = libpivy.piv_chuid_get_expiry(self._ptr, byref(sz))
         return string_at(ptr, sz.value)
     def set_expiry_rel(self, seconds: int):
-        if self._set:
+        if self._owner:
             raise PermissionError('CHUID is read-only')
         libpivy.piv_chuid_set_expiry_rel(self._ptr, seconds)
     def set_random_guid(self):
-        if self._set:
+        if self._owner:
             raise PermissionError('CHUID is read-only')
         libpivy.piv_chuid_set_random_guid(self._ptr)
 
 class Fascn:
-    def __init__(self, ptr: Optional[c_void_p] = None, set: Optional[TokenSet] = None):
+    def __init__(self, ptr: Optional[c_void_p] = None, owner: Optional[object] = None):
         if ptr is None:
             ptr = libpivy.piv_fascn_zero()
-        self._set = set
+        self._owner = owner
         self._ptr = ptr
     def __del__(self):
-        if not self._set:
+        if not self._owner:
             libpivy.piv_fascn_free(self._ptr)
 
     def clone(self) -> Fascn:
@@ -227,7 +227,7 @@ class Fascn:
         return libpivy.piv_fascn_get_agency_code(self._ptr).decode('ascii')
     @agency_code.setter
     def agency_code(self, v: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('FASC-N is read-only')
         if len(v) != 4 or not v.isdigit():
             raise ValueError('Agency code must be 4 digits long')
@@ -237,7 +237,7 @@ class Fascn:
         return libpivy.piv_fascn_get_system_code(self._ptr).decode('ascii')
     @system_code.setter
     def system_code(self, v: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('FASC-N is read-only')
         if len(v) != 4 or not v.isdigit():
             raise ValueError('System code must be 4 digits long')
@@ -247,7 +247,7 @@ class Fascn:
         return libpivy.piv_fascn_get_cred_number(self._ptr).decode('ascii')
     @cred_number.setter
     def cred_number(self, v: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('FASC-N is read-only')
         if len(v) != 6 or not v.isdigit():
             raise ValueError('Cred number must be 6 digits long')
@@ -257,7 +257,7 @@ class Fascn:
         return libpivy.piv_fascn_get_cred_series(self._ptr).decode('ascii')
     @cred_series.setter
     def cred_series(self, v: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('FASC-N is read-only')
         if len(v) != 1 or not v.isdigit():
             raise ValueError('Cred series must be 1 digit long')
@@ -267,7 +267,7 @@ class Fascn:
         return libpivy.piv_fascn_get_indiv_cred_issue(self._ptr).decode('ascii')
     @indiv_cred_issue.setter
     def indiv_cred_issue(self, v: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('FASC-N is read-only')
         if len(v) != 1 or not v.isdigit():
             raise ValueError('Individual cred issue must be 1 digit long')
@@ -289,14 +289,14 @@ class Fascn:
         return FascnPOA(value = v)
 
     def set_org_id(self, org_type: FascnOC, org_id: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('FASC-N is read-only')
         if len(org_id) != 4 or not org_id.isdigit():
             raise ValueError('Org ID must be 4 digits long')
         libpivy.piv_fascn_set_org_id(self._ptr, org_type.value,
             org_id.encode('ascii'))
     def set_person_id(self, assoc: FascnPOA, person_id: str):
-        if self._set:
+        if self._owner:
             raise PermissionError('FASC-N is read-only')
         if len(person_id) != 10 or not person_id.isdigit():
             raise ValueError('Person ID must be 10 digits long')
